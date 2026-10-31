@@ -7,10 +7,34 @@
     const img = stage.querySelector('.stage-img');
     const thumbs = [...gallery.querySelectorAll('.thumb')];
 
+    const stopVideo = () => {
+      stage.querySelector('.stage-video')?.remove();
+      stage.classList.remove('has-video');
+    };
+
     thumbs.forEach(thumb => {
       thumb.addEventListener('click', () => {
         if (thumb.classList.contains('on')) return;
         thumbs.forEach(t => t.classList.toggle('on', t === thumb));
+        stopVideo();
+
+        if (thumb.dataset.video) {
+          const name = thumb.dataset.video;
+          const video = document.createElement('video');
+          video.className = 'stage-video';
+          video.muted = true;
+          video.loop = true;
+          video.playsInline = true;
+          video.poster = `img/${name}.webp`;
+          video.setAttribute('aria-label', thumb.dataset.alt);
+          video.innerHTML = `<source src="img/${name}.mp4" type="video/mp4"><source src="img/${name}.webm" type="video/webm">`;
+          stage.classList.remove('zooming');
+          stage.classList.add('has-video');
+          stage.append(video);
+          video.play().catch(() => {});
+          return;
+        }
+
         const name = thumb.dataset.src;
         stage.classList.add('fade');
         setTimeout(() => {
@@ -29,7 +53,7 @@
       const y = (e.clientY - r.top) / r.height * 100;
       img.style.transformOrigin = `${x}% ${y}%`;
     });
-    stage.addEventListener('mouseenter', () => stage.classList.add('zooming'));
+    stage.addEventListener('mouseenter', () => { if (!stage.classList.contains('has-video')) stage.classList.add('zooming'); });
     stage.addEventListener('mouseleave', () => stage.classList.remove('zooming'));
   });
 
